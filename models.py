@@ -9,8 +9,7 @@ def build_vgg(x_shape, num_classes=10, weight_decay=5e-4):
 
     model = Sequential()
 
-    model.add(Conv2D(64, (3, 3), padding='same',
-                     input_shape=x_shape, kernel_regularizer=regularizers.l2(weight_decay)))
+    model.add(Conv2D(64, (3, 3), padding='same', input_shape=x_shape, kernel_regularizer=regularizers.l2(weight_decay)))
     model.add(Activation('relu'))
     model.add(BatchNormalization())
     model.add(Dropout(0.3))
@@ -97,8 +96,7 @@ def build_lenet(x_shape, num_classes=10, weight_decay=5e-4):
 
     model = Sequential()
 
-    model.add(Conv2D(6, (5, 5), padding='same',
-                     input_shape=x_shape, kernel_regularizer=regularizers.l2(weight_decay)))
+    model.add(Conv2D(6, (5, 5), padding='same', input_shape=x_shape, kernel_regularizer=regularizers.l2(weight_decay)))
     model.add(Activation('relu'))
 
     model.add(AveragePooling2D(pool_size=(2, 2)))
