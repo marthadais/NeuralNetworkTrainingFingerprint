@@ -26,14 +26,28 @@ def count_lines(lines, lmin):
     return res
 
 
+def binarize_matrix(matrix, interval_a, interval_b):
+    res = matrix.copy()
+    idx = np.where(np.logical_and(matrix >= interval_a, matrix <= interval_b))
+    mask = np.ones(matrix.shape, bool)
+    mask[idx] = False
+    res[idx] = 1
+    res[mask] = 0
+    return res
+
+
 class RQA:
-    def __init__(self, dist_matrix, lmin=2, interval_a=0.5, interval_b=0.7):
+    def __init__(self, dist_matrix, lmin=2, laminarity_a=0.5, laminarity_b=0.7, entropy_a=0.5, entropy_b=0.7):
         self.lmin = lmin
-        self.interval_a = interval_a
-        self.interval_b = interval_b
-        self.b_matrix = self.binarize_matrix(dist_matrix)
-        self.laminarity = self.laminarity_measure(self.b_matrix)
-        self.entropy = self.entropy_measure(self.b_matrix)
+        self.lam_a = laminarity_a
+        self.lam_b = laminarity_b
+        self.ent_a = entropy_a
+        self.ent_b = entropy_b
+        #TODO: fazer a busca do intervalo automaticamente
+        b_lam_matrix = binarize_matrix(dist_matrix, self.laminarity_a, self.laminarity_b)
+        self.laminarity = self.laminarity_measure(b_lam_matrix)
+        b_ent_matrix = binarize_matrix(dist_matrix, self.entropy_a, self.entropy_b)
+        self.entropy = self.entropy_measure(b_ent_matrix)
 
 
     def entropy_measure(self, matrix):
@@ -56,16 +70,6 @@ class RQA:
         v_lenght = list(range(0, matrix.shape[1]))
 
         return np.sum(v_lenght*hist1[0])/np.sum(v_lenght*hist_lmin[0])
-
-
-    def binarize_matrix(self, matrix):
-        res = matrix.copy()
-        idx = np.where(np.logical_and(matrix >= self.interval_a, matrix <= self.interval_b))
-        mask = np.ones(matrix.shape, bool)
-        mask[idx] = False
-        res[idx] = 1
-        res[mask] = 0
-        return res
 
 
 if __name__ == '__main__':

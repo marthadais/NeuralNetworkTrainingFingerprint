@@ -52,9 +52,11 @@ class models_training:
 
         # save the predictions in every k epochs
         for i in range(0, self.maxepoches, self.k):
+            print(f'Running {i} of {self.maxepoches}...')
             history_info = self.model.fit(data_generator.flow(self.x_train, self.y_train, batch_size=self.batch_size,
                                                              shuffle=True),
-                                         steps_per_epoch=self.x_train.shape[0] // self.batch_size, epochs=self.k)
+                                         steps_per_epoch=self.x_train.shape[0] // self.batch_size, epochs=self.k,
+                                          verbose=0)
             predicted_x = self.model.predict(self.x_train)
             self.snapshots_info[i] = {}
             self.snapshots_info[i]['predictions'] = predicted_x.argmax(axis=1)
