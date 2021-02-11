@@ -44,9 +44,9 @@ class RQA:
         self.ent_a = entropy_a
         self.ent_b = entropy_b
         #TODO: fazer a busca do intervalo automaticamente
-        b_lam_matrix = binarize_matrix(dist_matrix, self.laminarity_a, self.laminarity_b)
+        b_lam_matrix = binarize_matrix(dist_matrix, self.lam_a, self.lam_b)
         self.laminarity = self.laminarity_measure(b_lam_matrix)
-        b_ent_matrix = binarize_matrix(dist_matrix, self.entropy_a, self.entropy_b)
+        b_ent_matrix = binarize_matrix(dist_matrix, self.ent_a, self.ent_b)
         self.entropy = self.entropy_measure(b_ent_matrix)
 
 

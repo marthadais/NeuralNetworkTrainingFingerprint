@@ -52,6 +52,7 @@ class NNTF_measures:
         self.ent_b = ent_b
 
         # training the model
+        #TODO: do not run if it was already computed
         model = snapshots.models_training(model_type=model_name, dataset=dataset, learning_rate=lr,
                                           momentum=mt, weight_decay=wd,
                                           maxepoches=max_epochs, batch_size=batch_size, k_steps=k_steps)
