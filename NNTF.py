@@ -2,6 +2,7 @@ import numpy as np
 import snapshots
 import measures
 import pickle
+import os
 
 
 def create_transitions_matrices(predictions, num_classes=10):
@@ -38,29 +39,24 @@ def create_distance_matrix(deltas):
 
 class NNTF_measures:
     def __init__(self, model_name='lenet', dataset='cifar10', lr=0.001, mt=0.9, wd=5e-3,
-                 max_epochs=100, batch_size=128, k_steps=1, l_min=2, lam_a=0.5, lam_b=0.7, ent_a=0.5, ent_b=0.7):
+                 max_epochs=100, batch_size=128, k_steps=1, l_min=2, interval=0.05):
         self.model_name = model_name
         self.dataset = dataset
         self.lr = lr
         self.mt = mt
         self.wd = wd
+        self.num_classes = 10
 
         self.l_min = l_min
-        self.lam_a = lam_a
-        self.lam_b = lam_b
-        self.ent_a = ent_a
-        self.ent_b = ent_b
+        self.interval = interval
 
         # training the model
-        #TODO: do not run if it was already computed
-        model = snapshots.models_training(model_type=model_name, dataset=dataset, learning_rate=lr,
-                                          momentum=mt, weight_decay=wd,
-                                          maxepoches=max_epochs, batch_size=batch_size, k_steps=k_steps)
-        pickle.dump(model.snapshots_info, open(
-            f'iterations_info/{model.dataset}_{model.model_type}_lr_{model.learning_rate}_mnt_{model.momentum}_wd_{model.weight_decay}.pickle',
-            'wb'))
-        self.num_classes = model.num_classes
-        self.num_classes = 10
+        snapshot_file = f'iterations_info/{dataset}_{model_name}_lr_{lr}_mnt_{mt}_wd_{wd}.pickle'
+        if not os.path.isfile(snapshot_file):
+            model = snapshots.models_training(model_type=model_name, dataset=dataset, learning_rate=lr,
+                                              momentum=mt, weight_decay=wd,
+                                              maxepoches=max_epochs, batch_size=batch_size, k_steps=k_steps)
+            pickle.dump(model.snapshots_info, open(snapshot_file, 'wb'))
 
         self.distance_matrix()
         self.measures = self.compute_rqa()
@@ -70,8 +66,8 @@ class NNTF_measures:
         dist_matrix = pickle.load(open(
             f'dist_matrix/{self.dataset}_{self.model_name}_lr_{self.lr}_mnt_{self.mt}_wd_{self.wd}.pickle',
             'rb'))
-        res = measures.RQA(dist_matrix, self.l_min, self.lam_a, self.lam_b, self.ent_a, self.ent_b)
-        pickle.dump(dist_matrix, open(
+        res = measures.RQA(dist_matrix, self.l_min, self.interval)
+        pickle.dump(res.all_measures, open(
             f'RQA_measures/{self.dataset}_{self.model_name}_lr_{self.lr}_mnt_{self.mt}_wd_{self.wd}.pickle',
             'wb'))
 
@@ -79,10 +75,10 @@ class NNTF_measures:
 
     def distance_matrix(self):
         # creating distance matrices
-        snapshots_info = pickle.load(open(
+        snapshots = pickle.load(open(
             f'iterations_info/{self.dataset}_{self.model_name}_lr_{self.lr}_mnt_{self.mt}_wd_{self.wd}.pickle',
             'rb'))
-        delta = create_transitions_matrices(snapshots_info, self.num_classes)
+        delta = create_transitions_matrices(snapshots, self.num_classes)
         dist_matrix = create_distance_matrix(delta)
         pickle.dump(dist_matrix, open(
             f'dist_matrix/{self.dataset}_{self.model_name}_lr_{self.lr}_mnt_{self.mt}_wd_{self.wd}.pickle',

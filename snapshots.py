@@ -1,3 +1,6 @@
+import keras
+import tensorflow as tf
+from tensorflow.compat.v1.keras import backend as K
 from keras import optimizers
 from keras.preprocessing.image import ImageDataGenerator
 import models
@@ -33,6 +36,9 @@ class models_training:
         self.train()
 
     def train(self, verbose=True):
+
+        sess = tf.compat.v1.Session(config=tf.compat.v1.ConfigProto(log_device_placement=True))
+        K.set_session(sess)
 
         if verbose:
             print(f'Running {self.model_type.upper()} model with {self.dataset.upper()} dataset...')
