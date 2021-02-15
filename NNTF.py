@@ -60,6 +60,7 @@ class NNTF_measures:
             f'iterations_info/{model.dataset}_{model.model_type}_lr_{model.learning_rate}_mnt_{model.momentum}_wd_{model.weight_decay}.pickle',
             'wb'))
         self.num_classes = model.num_classes
+        self.num_classes = 10
 
         self.distance_matrix()
         self.measures = self.compute_rqa()
