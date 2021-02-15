@@ -1,5 +1,6 @@
 import numpy as np
 import pickle
+import pandas as pd
 
 
 def split_list(x, pos):
@@ -37,27 +38,44 @@ def binarize_matrix(matrix, interval_a, interval_b):
 
 
 class RQA:
-    def __init__(self, dist_matrix, lmin=2, laminarity_a=0.5, laminarity_b=0.7, entropy_a=0.5, entropy_b=0.7):
+    def __init__(self, dist_matrix, lmin=2, interval=0.05):
         self.lmin = lmin
-        self.lam_a = laminarity_a
-        self.lam_b = laminarity_b
-        self.ent_a = entropy_a
-        self.ent_b = entropy_b
-        #TODO: fazer a busca do intervalo automaticamente
-        b_lam_matrix = binarize_matrix(dist_matrix, self.lam_a, self.lam_b)
-        self.laminarity = self.laminarity_measure(b_lam_matrix)
-        b_ent_matrix = binarize_matrix(dist_matrix, self.ent_a, self.ent_b)
-        self.entropy = self.entropy_measure(b_ent_matrix)
+        self.interval = interval
 
+        laminarity = -2
+        entropy = 2
+        all_res = {}
+        lam_a = -1
+        ent_a = -1
+        for i in list(np.around(np.arange(0.0, 1.0, 0.05), 2)):
+            b_matrix = binarize_matrix(dist_matrix, i, i+interval)
+            res_lam = self.laminarity_measure(b_matrix)
+            if res_lam > laminarity:
+                laminarity = res_lam
+                lam_a = i
+            res_ent = self.entropy_measure(b_matrix)
+            if res_ent < entropy and res_ent > 0:
+                entropy = res_ent
+                ent_a = i
+            all_res[i] = [i, res_lam, res_ent]
+
+        self.laminarity = laminarity
+        self.lam_a = lam_a
+        self.entropy = entropy
+        self.ent_a = ent_a
+        self.all_measures = pd.DataFrame.from_dict(all_res, orient='index')
+        self.all_measures.columns = ['int_a', 'laminarity', 'entropy']
 
     def entropy_measure(self, matrix):
         diags = [matrix.diagonal(i) for i in range(matrix.shape[1]-1, -matrix.shape[1], -1)]
         d = count_lines(diags, self.lmin)
         hist = np.histogram(d, bins=range(self.lmin - 1, len(matrix.diagonal()) + 2))
-        probs = hist[0] / np.sum(d)+1e-8
+
+        probs = np.zeros(len(hist[0]))
+        if np.sum(d) != 0:
+            probs = hist[0] / np.sum(d)
 
         return - np.sum(probs*np.log(probs+1e-8))
-
 
     def laminarity_measure(self, matrix):
         verticals = [matrix[:, i] for i in range(matrix.shape[1])]
@@ -69,7 +87,13 @@ class RQA:
 
         v_lenght = list(range(0, matrix.shape[1]))
 
-        return np.sum(v_lenght*hist1[0])/np.sum(v_lenght*hist_lmin[0])
+        num = np.sum(v_lenght * hist_lmin[0])
+        den = np.sum(v_lenght*hist1[0])
+        res = 0
+        if den != 0:
+            res = num/den
+
+        return res
 
 
 if __name__ == '__main__':
@@ -80,11 +104,9 @@ if __name__ == '__main__':
     #       [1, 0, 1, 0, 1],
     #       [1, 1, 1, 1, 0]])
     lmin=2
-    b_a = 0.5
-    b_b = 0.7
 
     dist_matrix = pickle.load(open(
         f'dist_matrix/cifar10_lenet_lr_0.001_mnt_0.9_wd_0.0005.pickle',
         'rb'))
 
-    measures = RQA(dist_matrix, lmin, b_a, b_b)
+    measures = RQA(dist_matrix, lmin, 0.05)

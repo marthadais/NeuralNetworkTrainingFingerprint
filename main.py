@@ -3,8 +3,10 @@ import NNTF
 
 def execute_lr_range(lr_range, k, max_epochs=50, mnt=0.9, wd=5e-3, model_name='lenet', dataset='cifar10'):
     for lr in lr_range:
-        NNTF.NNTF_measures(model_name=model_name, dataset=dataset, lr=lr, mt=mnt, wd=wd,
+        res = NNTF.NNTF_measures(model_name=model_name, dataset=dataset, lr=lr, mt=mnt, wd=wd,
                  max_epochs=max_epochs, batch_size=128, k_steps=k)
+        print(f'Lam: {res.measures.laminarity}')
+        print(f'Lam: {res.measures.entropy}')
 
 
 lr_range = [0.01, 0.005, 0.001]
