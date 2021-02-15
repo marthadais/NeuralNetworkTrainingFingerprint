@@ -1,6 +1,7 @@
 import keras
 from keras.datasets import cifar10, mnist
 
+
 def get_mnist_data():
     # The data, shuffled and split between train and test sets:
     (x_train, y_train),_ = mnist.load_data()

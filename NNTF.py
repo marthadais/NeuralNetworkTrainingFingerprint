@@ -1,102 +1,104 @@
-import numpy as np
-import snapshots
-import measures
+# import tensorflow as tf
+# from tensorflow.compat.v1.keras import backend as K
+from keras import optimizers
+from keras.preprocessing.image import ImageDataGenerator
+import models
+import datasets
 import pickle
+import measures
+import differences as df
 import os
 
 
-def create_transitions_matrices(predictions, num_classes=10):
-    iterations = list(predictions.keys())
-    delta = {}
+class NNTF:
+    def __init__(self, model_type='lenet', dataset='cifar10', learning_rate=0.001, momentum=0.9, weight_decay=5e-4,
+                 max_epochs=100, batch_size=128, k_steps=1, l_min=1, interval=0.05):
+        self.snapshots_info = {}
 
-    for iter in range(len(iterations)-1):
-        i_pred = predictions[iterations[iter]]['predictions']
-        j_pred = predictions[iterations[iter+1]]['predictions']
-        delta_i = np.zeros((num_classes, num_classes))
-        for i in range(len(i_pred)):
-            delta_i[i_pred[i], j_pred[i]] = delta_i[i_pred[i], j_pred[i]]+1
-        delta[iterations[iter]] = delta_i
-    return delta
-
-
-def create_distance_matrix(deltas):
-    n_deltas = len(deltas.keys())
-    deltas_elem = list(deltas.keys())
-    diff_matrix = np.zeros((n_deltas-1, n_deltas-1))
-
-    for i in range(n_deltas - 1):
-        for j in range(n_deltas - 1):
-            delta_i = deltas[deltas_elem[i]]
-            delta_j = deltas[deltas_elem[j]]
-            num = abs(delta_i-delta_j)
-            den = delta_i+delta_j
-            np.fill_diagonal(num, 0)
-            np.fill_diagonal(den, 0)
-            diff_matrix[i, j] = num.sum()/den.sum()
-
-    return diff_matrix
-
-
-class NNTF_measures:
-    def __init__(self, model_name='lenet', dataset='cifar10', lr=0.001, mt=0.9, wd=5e-3,
-                 max_epochs=100, batch_size=128, k_steps=1, l_min=2, interval=0.05):
-        self.model_name = model_name
+        self.model_type = model_type
         self.dataset = dataset
-        self.lr = lr
-        self.mt = mt
-        self.wd = wd
+        self.maxepoches = max_epochs
+        self.batch_size = batch_size
+        self.k = k_steps
         self.num_classes = 10
+
+        self.weight_decay = weight_decay
+        self.learning_rate = learning_rate
+        self.momentum = momentum
 
         self.l_min = l_min
         self.interval = interval
+        self.output_file = f'{self.dataset}_{self.model_type}_lr_{self.learning_rate}_mnt_{self.momentum}_wd_{self.weight_decay}.pickle'
 
-        # training the model
-        snapshot_file = f'iterations_info/{dataset}_{model_name}_lr_{lr}_mnt_{mt}_wd_{wd}.pickle'
-        if not os.path.isfile(snapshot_file):
-            model = snapshots.models_training(model_type=model_name, dataset=dataset, learning_rate=lr,
-                                              momentum=mt, weight_decay=wd,
-                                              maxepoches=max_epochs, batch_size=batch_size, k_steps=k_steps)
-            pickle.dump(model.snapshots_info, open(snapshot_file, 'wb'))
+        if not os.path.isfile(f'snapshots_info/{self.output_file}'):
+            self.train()
 
         self.distance_matrix()
         self.measures = self.compute_rqa()
 
+    def train(self, verbose=True):
+
+        # sess = tf.compat.v1.Session(config=tf.compat.v1.ConfigProto(log_device_placement=True))
+        # K.set_session(sess)
+
+        if self.dataset == 'cifar10':
+            x_train, y_train, self.num_classes, x_shape = datasets.get_cifar10_data()
+        else:
+            x_train, y_train, self.num_classes, x_shape = datasets.get_mnist_data()
+
+        if self.model_type == 'lenet':
+            model = models.build_lenet(x_shape, self.num_classes, self.weight_decay)
+        else:
+            model = models.build_vgg16(x_shape, self.num_classes, self.weight_decay)
+
+        if verbose:
+            print(f'Running {self.model_type.upper()} model with {self.dataset.upper()} dataset...')
+            print(f'It will save at every {self.k} epochs...')
+            print(f'Learning Rate: {self.learning_rate}')
+            print(f'Momentum: {self.momentum}')
+            print(f'Weight Decay: {self.weight_decay}')
+
+        # avoid load all the dataset on the RAM memory (slow processing)
+        # it is also used for data augmentation
+        data_generator = ImageDataGenerator()
+        data_generator.fit(x_train)
+
+        # optimization details
+        sgd = optimizers.SGD(lr=self.learning_rate, momentum=self.momentum, nesterov=True)
+        model.compile(loss='categorical_crossentropy', optimizer=sgd, metrics=['accuracy'])
+
+        # save the predictions in every k epochs
+        snapshots_info = {}
+        for i in range(0, self.maxepoches, self.k):
+            print(f'Running {i} of {self.maxepoches}...')
+            history_info = model.fit(data_generator.flow(x_train, y_train, batch_size=self.batch_size, shuffle=True),
+                                         steps_per_epoch=x_train.shape[0] // self.batch_size, epochs=self.k,
+                                          verbose=0)
+            predicted_x = model.predict(x_train)
+            snapshots_info[i] = {}
+            snapshots_info[i]['predictions'] = predicted_x.argmax(axis=1)
+            snapshots_info[i]['loss'] = history_info.history['loss'][self.k - 1]
+            snapshots_info[i]['accuracy'] = history_info.history['accuracy'][self.k - 1]
+
+        model.save_weights(f'models/{self.model_type}.h5')
+        pickle.dump(snapshots_info, open(f'snapshots_info/{self.output_file}', 'wb'))
+
+        return snapshots_info
+
     def compute_rqa(self):
         # computing RQA measures
-        dist_matrix = pickle.load(open(
-            f'dist_matrix/{self.dataset}_{self.model_name}_lr_{self.lr}_mnt_{self.mt}_wd_{self.wd}.pickle',
-            'rb'))
+        dist_matrix = pickle.load(open(f'dist_matrix/{self.output_file}', 'rb'))
         res = measures.RQA(dist_matrix, self.l_min, self.interval)
-        pickle.dump(res.all_measures, open(
-            f'RQA_measures/{self.dataset}_{self.model_name}_lr_{self.lr}_mnt_{self.mt}_wd_{self.wd}.pickle',
-            'wb'))
+        pickle.dump(res.all_measures, open(f'RQA_measures/{self.output_file}', 'wb'))
 
         return res
 
     def distance_matrix(self):
         # creating distance matrices
         snapshots = pickle.load(open(
-            f'iterations_info/{self.dataset}_{self.model_name}_lr_{self.lr}_mnt_{self.mt}_wd_{self.wd}.pickle',
-            'rb'))
-        delta = create_transitions_matrices(snapshots, self.num_classes)
-        dist_matrix = create_distance_matrix(delta)
+            f'snapshots_info/{self.output_file}', 'rb'))
+        delta = df.create_transitions_matrices(snapshots, self.num_classes)
+        dist_matrix = df.create_distance_matrix(delta)
         pickle.dump(dist_matrix, open(
-            f'dist_matrix/{self.dataset}_{self.model_name}_lr_{self.lr}_mnt_{self.mt}_wd_{self.wd}.pickle',
-            'wb'))
+            f'dist_matrix/{self.output_file}', 'wb'))
 
-
-if __name__ == '__main__':
-    # model = snapshots.models_training(model_type='lenet', dataset='cifar10', learning_rate=0.001, momentum=0.9, weight_decay=5e-4,
-    #              maxepoches=80, batch_size=128, k_steps=5)
-    # pickle.dump(model.snapshots_info, open(
-    #     f'iterations_info/{model.dataset}_{model.model_type}_lr_{model.learning_rate}_mnt_{model.momentum}_wd_{model.weight_decay}.pickle',
-    #     'wb'))
-
-    snapshots_info = pickle.load(open(
-        f'iterations_info/cifar10_lenet_lr_0.001_mnt_0.9_wd_0.0005.pickle',
-        'rb'))
-    delta = create_transitions_matrices(snapshots_info)
-    dist_matrix = create_distance_matrix(delta)
-    pickle.dump(dist_matrix, open(
-        f'dist_matrix/cifar10_lenet_lr_0.001_mnt_0.9_wd_0.0005.pickle',
-        'wb'))
