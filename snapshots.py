@@ -28,7 +28,7 @@ class models_training:
         if self.model_type == 'lenet':
             self.model = models.build_lenet(self.x_shape, self.num_classes, self.weight_decay)
         else:
-            self.model = models.build_vgg(self.x_shape, self.num_classes, self.weight_decay)
+            self.model = models.build_vgg16(self.x_shape, self.num_classes, self.weight_decay)
 
         self.train()
 
