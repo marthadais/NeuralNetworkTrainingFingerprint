@@ -1,5 +1,3 @@
-# import tensorflow as tf
-# from tensorflow.compat.v1.keras import backend as K
 from keras import optimizers
 from keras.preprocessing.image import ImageDataGenerator
 import models
@@ -37,14 +35,10 @@ class NNTF:
         self.measures = self.compute_rqa()
 
     def train(self, verbose=True):
-
-        # sess = tf.compat.v1.Session(config=tf.compat.v1.ConfigProto(log_device_placement=True))
-        # K.set_session(sess)
-
         if self.dataset == 'cifar10':
-            x_train, y_train, self.num_classes, x_shape = datasets.get_cifar10_data()
+            x_train, y_train, x_test, y_test, self.num_classes, x_shape = datasets.get_cifar10_data()
         else:
-            x_train, y_train, self.num_classes, x_shape = datasets.get_mnist_data()
+            x_train, y_train, x_test, y_test, self.num_classes, x_shape = datasets.get_mnist_data()
 
         if self.model_type == 'lenet':
             model = models.build_lenet(x_shape, self.num_classes, self.weight_decay)
@@ -70,7 +64,8 @@ class NNTF:
         # save the predictions in every k epochs
         snapshots_info = {}
         for i in range(0, self.maxepoches, self.k):
-            print(f'Running {i} of {self.maxepoches}...')
+            if verbose:
+                print(f'Running {i} of {self.maxepoches}...')
             history_info = model.fit(data_generator.flow(x_train, y_train, batch_size=self.batch_size, shuffle=True),
                                          steps_per_epoch=x_train.shape[0] // self.batch_size, epochs=self.k,
                                           verbose=0)
@@ -79,8 +74,12 @@ class NNTF:
             snapshots_info[i]['predictions'] = predicted_x.argmax(axis=1)
             snapshots_info[i]['loss'] = history_info.history['loss'][self.k - 1]
             snapshots_info[i]['accuracy'] = history_info.history['accuracy'][self.k - 1]
+            snapshots_info[i]['test_score'] = model.evaluate(x_test, y_test, verbose=0)
+            if verbose:
+                print(f"Loss and Acc train: {snapshots_info[i]['loss']} {snapshots_info[i]['accuracy']}")
+                print(f"Loss and Acc test: {snapshots_info[i]['test_score']}")
 
-        model.save_weights(f'models/{self.model_type}.h5')
+        model.save_weights(f'models/{self.output_file}.h5')
         pickle.dump(snapshots_info, open(f'snapshots_info/{self.output_file}', 'wb'))
 
         return snapshots_info
@@ -101,4 +100,6 @@ class NNTF:
         dist_matrix = df.create_distance_matrix(delta)
         pickle.dump(dist_matrix, open(
             f'dist_matrix/{self.output_file}', 'wb'))
+
+        return dist_matrix
 
