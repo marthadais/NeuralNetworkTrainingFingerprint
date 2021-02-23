@@ -92,6 +92,14 @@ class NNTF:
 
         return res
 
+    def print_rqa(self):
+        res = pickle.load(open(f'RQA_measures/{self.output_file}', 'rb'))
+        print(f'\nFile: {self.output_file}')
+        print(f'Interval & Laminarity & Entropia')
+        for i in range(len(res.index)):
+            print(f'[{round(res.iloc[i, 0], 2)}, {round(res.iloc[i, 0]+0.05, 2)}] & {round(res.iloc[i, 1], 2)} & {round(res.iloc[i, 2], 2)}')
+
+
     def distance_matrix(self):
         # creating distance matrices
         snapshots = pickle.load(open(
