@@ -4,10 +4,8 @@ import pickle
 import os
 
 IMGDIR = 'figures/'
-SNAPSHOTS_DIR = 'data/snapshots_info/'
-DMATRIX_DIR = 'data/dist_matrix/'
-
-
+SNAPSHOTS_DIR = './data/snapshots_info/'
+DMATRIX_DIR = './data/dist_matrix/'
 
 
 if (os.path.isdir(IMGDIR) == False):

@@ -18,10 +18,10 @@ def create_transitions_matrices(predictions, num_classes=10):
 def create_distance_matrix(deltas):
     n_deltas = len(deltas.keys())
     deltas_elem = list(deltas.keys())
-    diff_matrix = np.zeros((n_deltas-1, n_deltas-1))
+    diff_matrix = np.zeros((n_deltas, n_deltas))
 
-    for i in range(n_deltas - 1):
-        for j in range(n_deltas - 1):
+    for i in range(n_deltas):
+        for j in range(n_deltas):
             delta_i = deltas[deltas_elem[i]]
             delta_j = deltas[deltas_elem[j]]
             num = abs(delta_i-delta_j)

@@ -1,10 +1,7 @@
 from keras import optimizers
 from keras.preprocessing.image import ImageDataGenerator
-import models
-import datasets
 import pickle
-import measures
-import differences as df
+from utils import differences as df, measures, models, datasets
 import os
 
 
@@ -28,7 +25,7 @@ class NNTF:
         self.interval = interval
         self.output_file = f'{self.dataset}_{self.model_type}_lr_{self.learning_rate}_mnt_{self.momentum}_wd_{self.weight_decay}.pickle'
 
-        if not os.path.isfile(f'snapshots_info/{self.output_file}'):
+        if not os.path.isfile(f'./data/snapshots_info/{self.output_file}'):
             self.train()
 
         self.distance_matrix()
@@ -79,21 +76,21 @@ class NNTF:
                 print(f"Loss and Acc train: {snapshots_info[i]['loss']} {snapshots_info[i]['accuracy']}")
                 print(f"Loss and Acc test: {snapshots_info[i]['test_score']}")
 
-        model.save_weights(f'models/{self.output_file}.h5')
-        pickle.dump(snapshots_info, open(f'snapshots_info/{self.output_file}', 'wb'))
+        model.save_weights(f'./data/models/{self.output_file}.h5')
+        pickle.dump(snapshots_info, open(f'./data/snapshots_info/{self.output_file}', 'wb'))
 
         return snapshots_info
 
     def compute_rqa(self):
         # computing RQA measures
-        dist_matrix = pickle.load(open(f'dist_matrix/{self.output_file}', 'rb'))
+        dist_matrix = pickle.load(open(f'./data/dist_matrix/{self.output_file}', 'rb'))
         res = measures.RQA(dist_matrix, self.l_min, self.interval)
-        pickle.dump(res.all_measures, open(f'RQA_measures/{self.output_file}', 'wb'))
+        pickle.dump(res.all_measures, open(f'./data/RQA_measures/{self.output_file}', 'wb'))
 
         return res
 
     def print_rqa(self):
-        res = pickle.load(open(f'RQA_measures/{self.output_file}', 'rb'))
+        res = pickle.load(open(f'./data/RQA_measures/{self.output_file}', 'rb'))
         print(f'\nFile: {self.output_file}')
         print(f'Interval & Laminarity & Entropia')
         for i in range(len(res.index)):
@@ -103,11 +100,11 @@ class NNTF:
     def distance_matrix(self):
         # creating distance matrices
         snapshots = pickle.load(open(
-            f'snapshots_info/{self.output_file}', 'rb'))
+            f'./data/snapshots_info/{self.output_file}', 'rb'))
         delta = df.create_transitions_matrices(snapshots, self.num_classes)
         dist_matrix = df.create_distance_matrix(delta)
         pickle.dump(dist_matrix, open(
-            f'dist_matrix/{self.output_file}', 'wb'))
+            f'./data/dist_matrix/{self.output_file}', 'wb'))
 
         return dist_matrix
 

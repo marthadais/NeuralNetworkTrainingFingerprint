@@ -28,10 +28,10 @@ wd_range = [0.1, 0.05, 0.01, 0.005, 0.001, 0, 0.0005]
 k=1
 me = 50
 
-# execute_lr_range(lr_range, k=k, max_epochs=me, model_name='VGG16')
-# execute_wd_range(wd_range, k=k, max_epochs=me, model_name='VGG16')
-# execute_mt_range(mnt_range, k=k, max_epochs=me, model_name='VGG16')
+execute_lr_range(lr_range, k=k, max_epochs=me, model_name='VGG16')
+execute_wd_range(wd_range, k=k, max_epochs=me, model_name='VGG16')
+execute_mt_range(mnt_range, k=k, max_epochs=me, model_name='VGG16')
 
-# execute_lr_range(lr_range, k=k, max_epochs=me, model_name='lenet')
+execute_lr_range(lr_range, k=k, max_epochs=me, model_name='lenet')
 execute_wd_range(wd_range, k=k, max_epochs=me, model_name='lenet')
-# execute_mt_range(mnt_range, k=k, max_epochs=me, model_name='lenet')
+execute_mt_range(mnt_range, k=k, max_epochs=me, model_name='lenet')
