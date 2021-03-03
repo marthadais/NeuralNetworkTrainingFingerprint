@@ -3,6 +3,7 @@ from keras.layers import Dense, Dropout, Activation, Flatten
 from keras.layers import Conv2D, MaxPooling2D, AveragePooling2D
 from keras import regularizers
 
+
 def build_vgg16(x_shape, num_classes=10, weight_decay=5e-4):
     # Build the network of vgg for 10 classes with massive dropout and weight decay as described in the paper.
 

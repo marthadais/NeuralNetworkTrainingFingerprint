@@ -106,7 +106,7 @@ if __name__ == '__main__':
     lmin=2
 
     dist_matrix = pickle.load(open(
-        f'dist_matrix/cifar10_lenet_lr_0.001_mnt_0.9_wd_0.0005.pickle',
+        f'./data/dist_matrix/cifar10_lenet_lr_0.001_mnt_0.9_wd_0.0005.pickle',
         'rb'))
 
     measures = RQA(dist_matrix, lmin, 0.05)
