@@ -24,11 +24,14 @@ def execute_mt_range(param_range, k, max_epochs=50, wd=5e-3, lr=0.001, model_nam
 
 lr_range = [0.01, 0.005, 0.001]
 mnt_range = [0.5, 0.7, 0.9, 0.95]
-wd_range = [0.1, 0.05, 0.01, 0.005, 0.001, 0]
+wd_range = [0.1, 0.05, 0.01, 0.005, 0.001, 0, 0.0005]
 k=1
 me = 50
 
-execute_lr_range(lr_range, k=k, max_epochs=me, model_name='VGG16')
-execute_wd_range(wd_range, k=k, max_epochs=me, model_name='VGG16')
-execute_mt_range(mnt_range, k=k, max_epochs=me, model_name='VGG16')
+# execute_lr_range(lr_range, k=k, max_epochs=me, model_name='VGG16')
+# execute_wd_range(wd_range, k=k, max_epochs=me, model_name='VGG16')
+# execute_mt_range(mnt_range, k=k, max_epochs=me, model_name='VGG16')
 
+# execute_lr_range(lr_range, k=k, max_epochs=me, model_name='lenet')
+execute_wd_range(wd_range, k=k, max_epochs=me, model_name='lenet')
+# execute_mt_range(mnt_range, k=k, max_epochs=me, model_name='lenet')

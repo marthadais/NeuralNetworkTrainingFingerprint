@@ -97,7 +97,7 @@ class NNTF:
         print(f'\nFile: {self.output_file}')
         print(f'Interval & Laminarity & Entropia')
         for i in range(len(res.index)):
-            print(f'[{round(res.iloc[i, 0], 2)}, {round(res.iloc[i, 0]+0.05, 2)}] & {round(res.iloc[i, 1], 2)} & {round(res.iloc[i, 2], 2)}')
+            print(f'[{round(res.iloc[i, 0], 2)}, {round(res.iloc[i, 0]+0.05, 2)}] & {round(res.iloc[i, 1], 4)} & {round(res.iloc[i, 2], 4)}')
 
 
     def distance_matrix(self):
