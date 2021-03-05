@@ -8,7 +8,7 @@ matplotlib==3.3.4\
 numpy==1.18.5\
 pandas==1.2.2\
 scipy==1.6.0\
-tensorflow==2.3.1\
+tensorflow==2.3.1
 
 ## Usage Example
 
@@ -20,6 +20,7 @@ from NNTF import NNTF
 res = NNTF(model_type='lenet', dataset_name='mnist', learning_rate=0.001, momentum=0.9, weight_decay=0.005,
                  max_epochs=30)
 res.print_rqa()
+res.plot_figures()
 ```
 To include a new dataset, you can check and modify the file utils/datasets.py and, then, the __init__ function in NNTF.py file.\
 To include a new neural network arquitecture, you can check and modify the file utils/models.py and, then, the __init__ function in NNTF.py file.\
@@ -43,11 +44,11 @@ It should include the folders:
    - figures
 
 3. The folder utils contains python files.
-   1 The file datasets.py has functions to get datasets from keras datasets. In this case, the datasets used are MNIST and Cifar-10.
-   2 The file models.py has function to build the network architecture under analysis. In this case, the architectures are LeNet-5 and VGG-16.
-   3 The files differences.py has functions to compute the transitions and the distance between matrices used by NNTF.
-   4 The file measure.py contains the class RQA that computes the laminarity and the entropy measures to conduct the RQA analysis used by NNTF.
-   5 The file heatmaps.py has function to plot figures of the transitions and the distance matrices.
+   1. The file datasets.py has functions to get datasets from keras datasets. In this case, the datasets used are MNIST and Cifar-10.
+   2. The file models.py has function to build the network architecture under analysis. In this case, the architectures are LeNet-5 and VGG-16.
+   3. The files differences.py has functions to compute the transitions and the distance between matrices used by NNTF.
+   4. The file measure.py contains the class RQA that computes the laminarity and the entropy measures to conduct the RQA analysis used by NNTF.
+   5. The file heatmaps.py has function to plot figures of the transitions and the distance matrices.
 
 4. The file full_experiments.py is to execute the whole experiments did in [1].
 
