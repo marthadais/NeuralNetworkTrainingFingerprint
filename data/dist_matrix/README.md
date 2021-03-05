@@ -1,0 +1,1 @@
+This is to store the distance between matrices produced by the NNFT.

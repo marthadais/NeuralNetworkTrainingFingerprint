@@ -28,6 +28,9 @@ def create_distance_matrix(deltas):
             den = delta_i+delta_j
             np.fill_diagonal(num, 0)
             np.fill_diagonal(den, 0)
-            diff_matrix[i, j] = num.sum()/den.sum()
+            if den.sum() == 0:
+                diff_matrix[i, j] = 0
+            else:
+                diff_matrix[i, j] = num.sum()/den.sum()
 
     return diff_matrix

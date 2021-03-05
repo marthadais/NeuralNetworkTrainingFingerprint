@@ -1,0 +1,1 @@
+This is to store the figures of transitions and distance matrices produced by the NNFT.

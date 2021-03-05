@@ -1,5 +1,6 @@
 import keras
 from keras.datasets import cifar10, mnist
+import numpy as np
 
 
 def get_mnist_data():
@@ -12,12 +13,11 @@ def get_mnist_data():
     x_train = x_train.astype('float32')
     x_test = x_test.astype('float32')
 
-    num_classes = 10
+    num_classes = len(np.unique(y_train))
     y_train = keras.utils.to_categorical(y_train, num_classes)
     y_test = keras.utils.to_categorical(y_test, num_classes)
-    x_shape = [28, 28, 1]
 
-    return x_train, y_train, x_test, y_test, num_classes, x_shape
+    return x_train, y_train, x_test, y_test
 
 
 def get_cifar10_data():
@@ -26,9 +26,8 @@ def get_cifar10_data():
     x_train = x_train.astype('float32')
     x_test = x_test.astype('float32')
 
-    num_classes = 10
+    num_classes = len(np.unique(y_train))
     y_train = keras.utils.to_categorical(y_train, num_classes)
     y_test = keras.utils.to_categorical(y_test, num_classes)
-    x_shape = [32, 32, 3]
 
-    return x_train, y_train, x_test, y_test, num_classes, x_shape
+    return x_train, y_train, x_test, y_test

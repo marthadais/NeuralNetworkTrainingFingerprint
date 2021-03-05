@@ -1,21 +1,21 @@
 from keras import optimizers
 from keras.preprocessing.image import ImageDataGenerator
 import pickle
-from utils import differences as df, measures, models, datasets
+from utils import differences as df, measures, models, datasets, heatmaps
 import os
 
 
 class NNTF:
-    def __init__(self, model_type='lenet', dataset='cifar10', learning_rate=0.001, momentum=0.9, weight_decay=5e-4,
+    def __init__(self, model_type='lenet', dataset_name='cifar10', learning_rate=0.001, momentum=0.9, weight_decay=5e-4,
                  max_epochs=100, batch_size=128, k_steps=1, l_min=1, interval=0.05):
         self.snapshots_info = {}
 
-        self.model_type = model_type
-        self.dataset = dataset
+        self.dataset = dataset_name
         self.maxepoches = max_epochs
         self.batch_size = batch_size
         self.k = k_steps
         self.num_classes = 10
+        self.model_type = model_type
 
         self.weight_decay = weight_decay
         self.learning_rate = learning_rate
@@ -23,24 +23,30 @@ class NNTF:
 
         self.l_min = l_min
         self.interval = interval
-        self.output_file = f'{self.dataset}_{self.model_type}_lr_{self.learning_rate}_mnt_{self.momentum}_wd_{self.weight_decay}.pickle'
 
-        if not os.path.isfile(f'./data/snapshots_info/{self.output_file}'):
-            self.train()
+        # selecting the dataset
+        if self.dataset == 'cifar10':
+            x_train, y_train, x_test, y_test = datasets.get_cifar10_data()
+        else:
+            x_train, y_train, x_test, y_test = datasets.get_mnist_data()
+
+        self.num_classes = y_train.shape[1]
+        x_shape = x_train.shape[1:4]
+
+        self.output_file = f'{self.dataset}_{self.model_type}_lr_{self.learning_rate}_mnt_{self.momentum}_wd_{self.weight_decay}'
+
+        if not os.path.isfile(f'./data/snapshots_info/{self.output_file}.pickle'):
+            # selecting the network architecture
+            if self.model_type == 'lenet':
+                model = models.build_lenet(x_shape, self.num_classes, self.weight_decay)
+            else:
+                model = models.build_vgg16(x_shape, self.num_classes, self.weight_decay)
+            self.train(model, x_train, y_train, x_test, y_test)
 
         self.distance_matrix()
         self.measures = self.compute_rqa()
 
-    def train(self, verbose=True):
-        if self.dataset == 'cifar10':
-            x_train, y_train, x_test, y_test, self.num_classes, x_shape = datasets.get_cifar10_data()
-        else:
-            x_train, y_train, x_test, y_test, self.num_classes, x_shape = datasets.get_mnist_data()
-
-        if self.model_type == 'lenet':
-            model = models.build_lenet(x_shape, self.num_classes, self.weight_decay)
-        else:
-            model = models.build_vgg16(x_shape, self.num_classes, self.weight_decay)
+    def train(self, model, x_train, y_train, x_test, y_test, verbose=True):
 
         if verbose:
             print(f'Running {self.model_type.upper()} model with {self.dataset.upper()} dataset...')
@@ -77,34 +83,35 @@ class NNTF:
                 print(f"Loss and Acc test: {snapshots_info[i]['test_score']}")
 
         model.save_weights(f'./data/models/{self.output_file}.h5')
-        pickle.dump(snapshots_info, open(f'./data/snapshots_info/{self.output_file}', 'wb'))
+        pickle.dump(snapshots_info, open(f'./data/snapshots_info/{self.output_file}.pickle', 'wb'))
 
         return snapshots_info
 
+    def distance_matrix(self):
+        # creating distance matrices
+        snapshots = pickle.load(open(
+            f'./data/snapshots_info/{self.output_file}.pickle', 'rb'))
+        delta = df.create_transitions_matrices(snapshots, self.num_classes)
+        dist_matrix = df.create_distance_matrix(delta)
+        pickle.dump(dist_matrix, open(
+            f'./data/dist_matrix/{self.output_file}.pickle', 'wb'))
+
+        return dist_matrix
+
     def compute_rqa(self):
         # computing RQA measures
-        dist_matrix = pickle.load(open(f'./data/dist_matrix/{self.output_file}', 'rb'))
+        dist_matrix = pickle.load(open(f'./data/dist_matrix/{self.output_file}.pickle', 'rb'))
         res = measures.RQA(dist_matrix, self.l_min, self.interval)
-        pickle.dump(res.all_measures, open(f'./data/RQA_measures/{self.output_file}', 'wb'))
-
+        pickle.dump(res.all_measures, open(f'./data/RQA_measures/{self.output_file}.pickle', 'wb'))
         return res
 
     def print_rqa(self):
-        res = pickle.load(open(f'./data/RQA_measures/{self.output_file}', 'rb'))
+        res = pickle.load(open(f'./data/RQA_measures/{self.output_file}.pickle', 'rb'))
         print(f'\nFile: {self.output_file}')
         print(f'Interval & Laminarity & Entropia')
         for i in range(len(res.index)):
             print(f'[{round(res.iloc[i, 0], 2)}, {round(res.iloc[i, 0]+0.05, 2)}] & {round(res.iloc[i, 1], 4)} & {round(res.iloc[i, 2], 4)}')
 
-
-    def distance_matrix(self):
-        # creating distance matrices
-        snapshots = pickle.load(open(
-            f'./data/snapshots_info/{self.output_file}', 'rb'))
-        delta = df.create_transitions_matrices(snapshots, self.num_classes)
-        dist_matrix = df.create_distance_matrix(delta)
-        pickle.dump(dist_matrix, open(
-            f'./data/dist_matrix/{self.output_file}', 'wb'))
-
-        return dist_matrix
+    def plot_figures(self):
+        heatmaps.plot_results(self.output_file)
 

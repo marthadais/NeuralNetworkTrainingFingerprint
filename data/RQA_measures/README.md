@@ -1,0 +1,1 @@
+This is to store the RQA measures produced by the NNFT.

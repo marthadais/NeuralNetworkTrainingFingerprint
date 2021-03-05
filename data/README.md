@@ -1,0 +1,1 @@
+This is to store data produced by the NNFT.

@@ -1,0 +1,1 @@
+This is to store the snapshots of the transitions produced by the NNFT.
