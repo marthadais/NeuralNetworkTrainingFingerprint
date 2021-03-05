@@ -22,8 +22,8 @@ res = NNTF(model_type='lenet', dataset_name='mnist', learning_rate=0.001, moment
 res.print_rqa()
 res.plot_figures()
 ```
-To include a new dataset, you can check and modify the file utils/datasets.py and, then, the __init__ function in NNTF.py file.\
-To include a new neural network arquitecture, you can check and modify the file utils/models.py and, then, the __init__ function in NNTF.py file.\
+If you want to include a new dataset, you can check and modify the file utils/datasets.py and, then, the \_\_init\_\_ function in NNTF.py file.\
+If you want to include a new neural network arquitecture, you can check and modify the file utils/models.py and, then, the \_\_init\_\_ function in NNTF.py file.\
 The file full_experiments.py is to execute the whole experiments did in [1].
 
 ## Files description
