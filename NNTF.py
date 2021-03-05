@@ -8,6 +8,19 @@ import os
 class NNTF:
     def __init__(self, model_type='lenet', dataset_name='cifar10', learning_rate=0.001, momentum=0.9, weight_decay=5e-4,
                  max_epochs=100, batch_size=128, k_steps=1, l_min=1, interval=0.05):
+        """
+        Initialize the NNTF class that executes executes the visualization approach, including the network training, distances between matrices and RQA analysis.
+        :param model_type: the name of the network architecture (default: 'lenet').
+        :param dataset_name: the name of the dataset under analysis (default: 'cifar10').
+        :param learning_rate: the learning rate used in the training process (default: 0.001).
+        :param momentum: the momentum used in the training process (default: 0.9).
+        :param weight_decay: the weight decay used in the training process (default: 0.0005).
+        :param max_epochs: the maximum number of epochs to perform the learning (default: 100).
+        :param batch_size: the batch size used in the training process (default: 128).
+        :param k_steps: the number of epochs to store a snapshot of the training process (default: 1).
+        :param l_min: the minimum length used in the RQA measures (default: 2).
+        :param interval: the bands interval used to computes the RQA measure (default: 0.05).
+        """
         self.snapshots_info = {}
 
         self.dataset = dataset_name

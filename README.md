@@ -28,12 +28,18 @@ The file full_experiments.py is to execute the whole experiments did in [1].
 
 ## Files description
 
-1. The file NNTF.py contains the class NNTF that executes the Neural Network Training Fingerprint, including the network training, distances between matrices and RQA analysis.
+1. The file NNTF.py contains the class NNTF that executes the visualization approach, including the network training, distances between matrices and RQA analysis.
 The parameters are:
-   - data: all labeled samples, which are considered as unlabeled in this experiments.
-   - n_samples: number of samples to be selected and labeled (default: 10).
-   - method: 'random', 'least_confidence', 'entropy', 'kmeans', 'hierarchical' (default: 'random').
-   - agg_type: 'mean' or 'mode' (default: 'mean').
+   - model_type: the name of the network architecture ('lenet' or 'VGG').
+   - dataset_name: the name of the dataset under analysis ('mnist' or 'cifar10').
+   - learning_rate: the learning rate used in the training process (default: 0.001).
+   - momentum: the momentum used in the training process (default: 0.9).
+   - weight_decay: the weight decay used in the training process (default: 0.0005).
+   - max_epochs: the maximum number of epochs to perform the learning (default: 100).
+   - batch_size: the batch size used in the training process (default: 128).
+   - k_steps: the number of epochs to store a snapshot of the training process (default: 1).
+   - l_min: the minimum length used in the RQA measures (default: 2).
+   - interval: the bands interval used to computes the RQA measure (default: 0.05).
 
 2. The folder data stores the data produced by the NNTF execution.
 It should include the folders:
