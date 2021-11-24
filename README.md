@@ -62,5 +62,5 @@ It should include the folders:
 
 ## Reference
 
-[1]
+[1] Ferreira, M. D., Cantareira, G. D., de Mello, R. F., & Paulovich, F. V. (2021). Neural network training fingerprint: visual analytics of the training process in classification neural networks. Journal of Visualization, 1-20.
 
